@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Advanced Text Summarization Tool</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+  :root {
+    --primary: #5270f6;
+    --secondary: #c0afe7;
+    --accent: #f72585;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --success: #4cc9f0;
+    --warning: #f8961e;
+    --danger: #ef233c;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #220566 0%, #02040b 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--light);
+  }
+
+  .container {
+    background: white;
+    border-radius: 15px;
+    max-width: 900px;
+    width: 100%;
+    padding: 30px 40px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    color: var(--dark);
+    display: flex;
+    flex-direction: column;
+  }
+
+  h1 {
+    margin-bottom: 15px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--primary);
+    position: relative;
+    padding-bottom: 10px;
+  }
+
+  h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 3px;
+  }
+
+  .input-section, .controls-section, .output-section {
+    margin-bottom: 25px;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #444;
+    display: block;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 140px;
+    max-height: 300px;
+    width: 100%;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    padding: 15px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(67, 97, 238, 0.5);
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+  }
+
+  .control-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  select, input[type="range"] {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    font-family: 'Poppins', sans-serif;
+    background: white;
+    transition: all 0.3s ease;
+  }
+
+  select:focus, input[type="range"]:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+      appearance: none;
+    height: 8px;
+    background: #ddd;
+    border-radius: 5px;
+    padding: 0;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    background: var(--secondary);
+  }
+
+  .range-value {
+    display: inline-block;
+    margin-left: 10px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    flex: 1;
+    min-width: 120px;
+    background-color: var(--primary);
+    border: none;
+    padding: 15px;
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  button:hover {
+    background-color: var(--secondary);
+    transform: translateY(-2px);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  button.secondary {
+    background-color: white;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    box-shadow: none;
+  }
+
+  button.secondary:hover {
+    background-color: #f0f2ff;
+  }
+
+  button.danger {
+    background-color: var(--danger);
+    box-shadow: 0 5px 15px rgba(239, 35, 60, 0.4);
+  }
+
+  button.danger:hover {
+    background-color: #d90429;
+  }
+
+  .output-container {
+    margin-top: 20px;
+    background: #f5f7ff;
+    padding: 20px 25px;
+    border-radius: 12px;
+    border: 1.5px solid var(--primary);
+    min-height: 120px;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    position: relative;
+  }
+
+  .output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .stats {
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    gap: 15px;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .stat i {
+    font-size: 1.1rem;
+  }
+
+  .copy-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .copy-btn:hover {
+    background: var(--secondary);
+  }
+.copy-summary-btn {
+  width: fit-content; 
+  height: fit-content;/* Let the content define the width */
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius:100px;
+  color: white;
+}
+
+
+  /* Optional: Add a little hover effect */
+  .copy-summary-btn:hover {
+    background-color: #ddd;
+  }
+  .footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .loading {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @media (max-width: 600px) {
+    .container {
+      padding: 25px 20px;
+    }
+    .controls {
+      flex-direction: column;
+    }
+    .control-group {
+      width: 100%;
+    }
+    button {
+      width: 100%;
+    }
+  }
+
+  /* Icons */
+  .icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+</style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>Advanced Text Summarization Tool</h1>
+    
+    <div class="input-section">
+      <label for="inputText">Enter Text to Summarize</label>
+      <textarea id="inputText" placeholder="Paste or type your text here..."></textarea>
+    </div>
+
+    <div class="controls-section">
+      <div class="controls">
+        <div class="control-group">
+          <label for="languageSelect">Select Language</label>
+          <select id="languageSelect" aria-label="Select language">
+            <option value="en" selected>English</option>
+            <option value="te">Telugu</option>
+            <option value="hi">Hindi</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="summaryLength">Summary Length: <span id="summaryLengthValue">30</span>%</label>
+          <input type="range" id="summaryLength" min="10" max="90" step="5" value="30" aria-valuemin="10" aria-valuemax="90" aria-valuenow="30" aria-label="Summary length percentage" />
+        </div>
+
+        <div class="control-group">
+          <label for="algorithmSelect">Summarization Method</label>
+          <select id="algorithmSelect" aria-label="Select summarization method">
+            <option value="frequency" selected>Frequency-based</option>
+            <option value="lead">Lead-based</option>
+            <option value="random">Random</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button id="summarizeBtn" aria-label="Generate Summary">⚡ Summarize</button>
+        <button id="copyBtn" class="secondary" aria-label="Copy summary">📋 Copy</button>
+        <button id="clearBtn" class="danger" aria-label="Clear all text">🗑 Clear</button>
+        <button id="sampleBtn" class="secondary" aria-label="Load sample text">📝 Sample Text</button>
+      </div>
+    </div>
+
+    <div class="output-section" aria-live="polite" aria-atomic="true">
+      <div class="output-header">
+        <h2>Summary</h2>
+        <button id="copySummaryBtn" class="copy-summary-btn" aria-label="Copy summary text">Copy Summary</button>
+      </div>
+      <div id="outputText" class="output-container" tabindex="0" aria-label="Summary output">
+        <em>Summary will appear here after processing...</em>
+      </div>
+      <div class="stats" aria-live="polite" aria-atomic="true" style="margin-top:10px;">
+        <div class="stat" id="originalStats">Original Words: 0</div>
+        <div class="stat" id="summaryStats">Summary Words: 0</div>
+        <div class="stat" id="reductionStats">Reduction: 0%</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Note: Summarization algorithms here are simple demos, not advanced NLP models.</div>
+    </div>
+  </div>
+
+<script>
+  // Elements
+  const inputText = document.getElementById('inputText');
+  const languageSelect = document.getElementById('languageSelect');
+  const summaryLengthInput = document.getElementById('summaryLength');
+  const summaryLengthValue = document.getElementById('summaryLengthValue');
+  const algorithmSelect = document.getElementById('algorithmSelect');
+  const summarizeBtn = document.getElementById('summarizeBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const sampleBtn = document.getElementById('sampleBtn');
+  const outputText = document.getElementById('outputText');
+  const originalStats = document.getElementById('originalStats');
+  const summaryStats = document.getElementById('summaryStats');
+  const reductionStats = document.getElementById('reductionStats');
+  const copySummaryBtn = document.getElementById('copySummaryBtn');
+
+  // Update summary length display
+  summaryLengthInput.addEventListener('input', () => {
+    summaryLengthValue.textContent = summaryLengthInput.value;
+  });
+
+  // Sample texts for languages
+  const sampleTexts = {
+    en: `In a world where technology evolves at lightning speed, the art of summarization remains a beacon for efficient communication. This tool harnesses classical methods to deliver concise and meaningful summaries.`,
+    te: `టెక్నాలజీ వేగంగా అభివృద్ధి చెందుతున్న ప్రపంచంలో, సంక్షిప్తీకరణ కళ సమర్థవంతమైన కమ్యూనికేషన్‌కు మార్గదర్శకంగా ఉంటుంది. ఈ సాధనం క్లాసికల్ పద్ధతులను ఉపయోగించి సంక్షిప్త, అర్థవంతమైన సమ్మరీలను అందిస్తుంది.`,
+    hi: `एक ऐसी दुनिया में जहाँ तकनीक तेज़ी से विकसित हो रही है, सारांशण की कला प्रभावी संचार के लिए एक मार्गदर्शक बनी हुई है। यह उपकरण पारंपरिक तरीकों का उपयोग करके संक्षिप्त और सार्थक सारांश प्रदान करता है।`
+  };
+
+  sampleBtn.addEventListener('click', () => {
+    const lang = languageSelect.value;
+    inputText.value = sampleTexts[lang] || sampleTexts['en'];
+    outputText.textContent = '';
+    updateStats();
+  });
+
+  // Clear all
+  clearBtn.addEventListener('click', () => {
+    inputText.value = '';
+    outputText.textContent = '';
+    updateStats();
+  });
+
+  // Copy input text
+  copyBtn.addEventListener('click', () => {
+    if (!inputText.value.trim()) {
+      alert('Nothing to copy in the input!');
+      return;
+    }
+    navigator.clipboard.writeText(inputText.value).then(() => {
+      alert('Input text copied to clipboard!');
+    });
+  });
+
+  // Copy summary text
+  copySummaryBtn.addEventListener('click', () => {
+    const summary = outputText.textContent.trim();
+    if (!summary) {
+      alert('No summary to copy!');
+      return;
+    }
+    navigator.clipboard.writeText(summary).then(() => {
+      alert('Summary copied to clipboard!');
+    });
+  });
+
+  // Update stats function
+  function updateStats(summary = '') {
+    const originalWordCount = countWords(inputText.value);
+    const summaryWordCount = countWords(summary);
+    originalStats.textContent = `Original Words: ${originalWordCount}`;
+    summaryStats.textContent = `Summary Words: ${summaryWordCount}`;
+    const reductionPercent = originalWordCount ? Math.round(100 * (1 - summaryWordCount / originalWordCount)) : 0;
+    reductionStats.textContent = `Reduction: ${reductionPercent}%`;
+  }
+
+  // Word count helper
+  function countWords(text) {
+    if (!text) return 0;
+    return text.trim().split(/\s+/).length;
+  }
+
+  // Summarization algorithms
+
+  // Frequency-based summary (extracts most frequent words and selects sentences with most overlap)
+  function frequencyBasedSummarize(text, percent) {
+    if (!text) return '';
+
+    // Split sentences
+    const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
+
+    // Tokenize words (lowercase, remove punctuation)
+    const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+
+    // Calculate frequency of each word excluding stopwords
+    const stopwords = new Set([
+      'the', 'and', 'is', 'in', 'it', 'of', 'to', 'a', 'with', 'that', 'this', 'on', 'for', 'as', 'are', 'was', 'by', 'an', 'be', 'or', 'at', 'from', 'but', 'not', 'have', 'has', 'they', 'you', 'we', 'can', 'if'
+    ]);
+
+    const freqMap = {};
+    words.forEach(word => {
+      if (!stopwords.has(word)) {
+        freqMap[word] = (freqMap[word] || 0) + 1;
+      }
+    });
+
+    // Score sentences by summing freq of their words
+    const sentenceScores = sentences.map(sentence => {
+      const sentenceWords = sentence.toLowerCase().match(/\b\w+\b/g) || [];
+      let score = 0;
+      sentenceWords.forEach(w => {
+        if (freqMap[w]) score += freqMap[w];
+      });
+      return { sentence, score };
+    });
+
+    // Sort sentences by score descending
+    sentenceScores.sort((a, b) => b.score - a.score);
+
+    // Calculate number of sentences to include based on percent
+    const count = Math.max(1, Math.floor((percent / 100) * sentences.length));
+
+    // Pick top scoring sentences and preserve their original order
+    const selectedSentences = sentenceScores.slice(0, count).map(s => s.sentence);
+
+    // Sort by original position
+    selectedSentences.sort((a, b) => sentences.indexOf(a) - sentences.indexOf(b));
+
+    return selectedSentences.join(' ').trim();
+  }
+
+  // Lead-based summary (take first N% of sentences)
+  function leadBasedSummarize(text, percent) {
+    if (!text) return '';
+    const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
+    const count = Math.max(1, Math.floor((percent / 100) * sentences.length));
+    return sentences.slice(0, count).join(' ').trim();
+  }
+
+  // Random sentences summary (for demo)
+  function randomSummarize(text, percent) {
+    if (!text) return '';
+    const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
+    const count = Math.max(1, Math.floor((percent / 100) * sentences.length));
+    const shuffled = sentences.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, count);
+    // Sort selected sentences by original order
+    selected.sort((a, b) => sentences.indexOf(a) - sentences.indexOf(b));
+    return selected.join(' ').trim();
+  }
+
+  // Main summarization handler
+  summarizeBtn.addEventListener('click', () => {
+    const text = inputText.value.trim();
+    if (!text) {
+      alert('Please enter some text to summarize.');
+      return;
+    }
+
+    summarizeBtn.disabled = true;
+    summarizeBtn.textContent = '⏳ Summarizing...';
+
+    setTimeout(() => {
+      const lang = languageSelect.value;
+      const percent = parseInt(summaryLengthInput.value, 10);
+      const method = algorithmSelect.value;
+
+      let summary = '';
+
+      switch (method) {
+        case 'frequency':
+          summary = frequencyBasedSummarize(text, percent);
+          break;
+        case 'lead':
+          summary = leadBasedSummarize(text, percent);
+          break;
+        case 'random':
+          summary = randomSummarize(text, percent);
+          break;
+        default:
+          summary = frequencyBasedSummarize(text, percent);
+      }
+
+      if (!summary) {
+        summary = 'Could not generate summary. Try changing the settings or input text.';
+      }
+
+      outputText.textContent = summary;
+      updateStats(summary);
+
+      summarizeBtn.disabled = false;
+      summarizeBtn.textContent = '⚡ Summarize';
+    }, 500); // simulate some processing delay
+  });
+
+  // Update stats when input text changes
+  inputText.addEventListener('input', () => {
+    updateStats(outputText.textContent);
+  });
+
+  // Initialize
+  updateStats();
+</script>
+</body>
+</html>
